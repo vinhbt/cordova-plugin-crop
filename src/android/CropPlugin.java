@@ -7,7 +7,8 @@ import android.os.Bundle;
 import android.os.Environment;
 
 import com.soundcloud.android.crop.Crop;
-
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -16,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.lang.Math;
 
 public class CropPlugin extends CordovaPlugin {
     private CallbackContext callbackContext;
@@ -26,8 +28,21 @@ public class CropPlugin extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
       if (action.equals("cropImage")) {
           String imagePath = args.getString(0);
+          JSONObject options = args.getJSONObject(1);
+          int imgWidth = options.getInt("imgWidth");
+
 
           this.inputUri = Uri.parse(imagePath);
+
+          BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+          bmOptions.inJustDecodeBounds = true;
+          BitmapFactory.decodeFile(imagePath, bmOptions);
+
+          int imageHeight = imgWidth != -1 ? imgWidth : bmOptions.outHeight;
+          int imageWidth = imgWidth != -1 ? imgWidth : bmOptions.outWidth;
+
+          int cropW = Math.min(imageWidth, imageHeight);
+
           this.outputUri = Uri.fromFile(new File(getTempDirectoryPath() + "/" + System.currentTimeMillis()+ "-cropped.jpg"));
 
           PluginResult pr = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -36,9 +51,10 @@ public class CropPlugin extends CordovaPlugin {
           this.callbackContext = callbackContext;
 
           cordova.setActivityResultCallback(this);
-          Crop.of(this.inputUri, this.outputUri)
-                  .asSquare()
-                  .start(cordova.getActivity());
+          Crop crop = Crop.of(this.inputUri, this.outputUri);
+          crop.withMaxSize(cropW, cropW);
+          crop.withMinSize(cropW);
+          crop.asSquare().start(cordova.getActivity());
           return true;
       }
       return false;

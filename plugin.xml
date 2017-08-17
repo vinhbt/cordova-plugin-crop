@@ -18,7 +18,7 @@
   </engines>
 
   <js-module src="www/crop.js" name="CropPlugin">
-    <clobbers target="plugins.crop" />
+    <clobbers target="cropPlugin" />
   </js-module>
 
   <!-- ios -->
@@ -55,7 +55,9 @@
       </feature>
     </config-file>
 
-    <framework src="com.soundcloud.android:android-crop:1.0.0@aar" />
+    <framework src="src/android/test.gradle" custom="true" type="gradleReference" />
+
+    <resource-file src="lib/android-crop-release.aar" target="libs/android-crop-release.aar" />
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
       <activity android:name="com.soundcloud.android.crop.CropImageActivity" />

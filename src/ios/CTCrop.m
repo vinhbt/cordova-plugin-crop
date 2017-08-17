@@ -5,6 +5,7 @@
 @interface CTCrop ()
 @property (copy) NSString* callbackId;
 @property (assign) NSUInteger quality;
+property (assign) NSUInteger imgWidth;
 @end
 
 @implementation CTCrop
@@ -15,6 +16,7 @@
     NSDictionary *options = [command.arguments objectAtIndex:1];
     
     self.quality = options[@"quality"] ? [options[@"quality"] intValue] : 100;
+    self.imgWidth = options[@"imgWidth"] ? [options[@"imgWidth"] intValue] : -1;
     NSString *filePrefix = @"file://";
     
     if ([imagePath hasPrefix:filePrefix]) {
@@ -36,11 +38,11 @@
     cropController.delegate = self;
     cropController.image = image;
     
-    CGFloat width = image.size.width;
-    CGFloat height = image.size.height;
+    CGFloat width = self.imgWidth > -1 ? (CGFloat)self.imgWidth : image.size.width;
+    CGFloat height = self.imgWidth > -1 ? (CGFloat)self.imgWidth : image.size.height;
     CGFloat length = MIN(width, height);
     cropController.toolbarHidden = YES;
-    cropController.rotationEnabled = NO;
+    cropController.rotationEnabled = YES;
     cropController.keepingCropAspectRatio = YES;
     
     cropController.imageCropRect = CGRectMake((width - length) / 2,
