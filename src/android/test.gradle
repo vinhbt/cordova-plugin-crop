@@ -1,12 +1,13 @@
-repositories{    
+repositories{
+  mavenLocal()    
   jcenter()
-  flatDir {
-      dirs 'libs'
-   }
+//   flatDir {
+//      dirs 'libs'
+//   }
 }
 
 dependencies {
-   compile(name:'android-crop-release', ext:'aar')
+   compile 'com.sandinh:android-image-cropper:2.4.8'
 }
 
 android {

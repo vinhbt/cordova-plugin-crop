@@ -6,7 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 
-import com.soundcloud.android.crop.Crop;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import org.apache.cordova.CallbackContext;
@@ -22,28 +24,15 @@ import java.lang.Math;
 public class CropPlugin extends CordovaPlugin {
     private CallbackContext callbackContext;
     private Uri inputUri;
-    private Uri outputUri;
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
       if (action.equals("cropImage")) {
           String imagePath = args.getString(0);
           JSONObject options = args.getJSONObject(1);
-          int imgWidth = options.getInt("imgWidth");
-
+          int imgWidth = options.getInt("imgWidth") != -1 ? options.getInt("imgWidth") : 196;
 
           this.inputUri = Uri.parse(imagePath);
-
-          BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-          bmOptions.inJustDecodeBounds = true;
-          BitmapFactory.decodeFile(imagePath, bmOptions);
-
-          int imageHeight = imgWidth != -1 ? imgWidth : bmOptions.outHeight;
-          int imageWidth = imgWidth != -1 ? imgWidth : bmOptions.outWidth;
-
-          int cropW = Math.min(imageWidth, imageHeight);
-
-          this.outputUri = Uri.fromFile(new File(getTempDirectoryPath() + "/" + System.currentTimeMillis()+ "-cropped.jpg"));
 
           PluginResult pr = new PluginResult(PluginResult.Status.NO_RESULT);
           pr.setKeepCallback(true);
@@ -51,10 +40,12 @@ public class CropPlugin extends CordovaPlugin {
           this.callbackContext = callbackContext;
 
           cordova.setActivityResultCallback(this);
-          Crop crop = Crop.of(this.inputUri, this.outputUri);
-          crop.withMaxSize(cropW, cropW);
-          crop.withMinSize(cropW);
-          crop.asSquare().start(cordova.getActivity());
+          CropImage.activity(this.inputUri)
+                        .setGuidelines(CropImageView.Guidelines.ON)
+                        .setCropShape(CropImageView.CropShape.RECTANGLE)
+                        .setRequestedSize(imgWidth, imgWidth)
+                        .setFixAspectRatio(true)
+                        .start(cordova.getActivity());
           return true;
       }
       return false;
@@ -62,12 +53,13 @@ public class CropPlugin extends CordovaPlugin {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (requestCode == Crop.REQUEST_CROP) {
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                Uri imageUri = Crop.getOutput(intent);
-                this.callbackContext.success("file://" + imageUri.getPath() + "?" + System.currentTimeMillis());
+                CropImage.ActivityResult result = CropImage.getActivityResult(intent);
+                Uri imageUri = result.getUri();
+                this.callbackContext.success("file://" + imageUri.getPath());
                 this.callbackContext = null;
-            } else if (resultCode == Crop.RESULT_ERROR) {
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 try {
                     JSONObject err = new JSONObject();
                     err.put("message", "Error on cropping");
@@ -117,10 +109,6 @@ public class CropPlugin extends CordovaPlugin {
             state.putString("inputUri", this.inputUri.toString());
         }
 
-        if (this.outputUri != null) {
-            state.putString("outputUri", this.outputUri.toString());
-        }
-
         return state;
     }
 
@@ -128,10 +116,6 @@ public class CropPlugin extends CordovaPlugin {
 
         if (state.containsKey("inputUri")) {
             this.inputUri = Uri.parse(state.getString("inputUri"));
-        }
-
-        if (state.containsKey("outputUri")) {
-            this.inputUri = Uri.parse(state.getString("outputUri"));
         }
 
         this.callbackContext = callbackContext;
