@@ -1,17 +1,15 @@
 repositories{
   mavenLocal()   
-  maven {
-            url 'http://repo.bennuoc.com/repository/maven-snapshots'
-             credentials {
-				username 'deployment'
-				password 'nexus132'
-        	 }
-        } 
+  mavenCentral()
+  maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+  maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
   jcenter()
 }
 
 dependencies {
-   compile 'com.sandinh:android-image-cropper:2.4.8-SNAPSHOT'
+   compile 'com.android.support:appcompat-v7:25.3.1'
+   compile "com.android.support:exifinterface:25.3.1"
+   compile 'com.sandinh:android-image-cropper:2.4.8@aar'
 }
 
 android {
