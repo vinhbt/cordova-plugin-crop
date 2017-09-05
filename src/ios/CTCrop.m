@@ -5,7 +5,7 @@
 @interface CTCrop ()
 @property (copy) NSString* callbackId;
 @property (assign) NSUInteger quality;
-property (assign) NSUInteger imgWidth;
+@property (assign) NSUInteger imgWidth;
 @end
 
 @implementation CTCrop
