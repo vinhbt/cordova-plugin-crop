@@ -9,7 +9,7 @@ repositories{
 dependencies {
    compile 'com.android.support:appcompat-v7:25.3.1'
    compile "com.android.support:exifinterface:25.3.1"
-   compile 'com.sandinh:android-image-cropper:2.4.8@aar'
+   compile 'com.sandinh:android-image-cropper:2.4.9@aar'
 }
 
 android {
